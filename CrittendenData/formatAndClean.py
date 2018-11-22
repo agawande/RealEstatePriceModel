@@ -1,4 +1,5 @@
 import json
+from shapely.geometry import Polygon
 
 with open('output.json') as f:
     data = json.load(f)
@@ -9,7 +10,7 @@ housingData = data['Planning_Cadastre.PARCEL_POLYGON_CAMP']['features']
 
 output = open("crittenden.csv", "w")
 
-head="propertyShape,coordinates,gid,srce_date,ow_src_dat,cty,state,zip,type,assess_val,\
+head="propertyShape,latitude,longitude,gid,srce_date,ow_src_dat,cty,state,zip,type,assess_val,\
 imp_val,land_val,total_val,assess_dat,schl_code,acre_area,calc_acre"
 
 output.write(head)
@@ -19,10 +20,16 @@ for line in housingData:
     csvLine = ""
     # Shape of the property - Polygon or MultiPolygon
     propertyShape = line['geometry']['type']
-    if propertyShape == 'GeometryCollection':
+    if propertyShape == 'GeometryCollection' or propertyShape == "MultiPolygon":
         continue
     # Coordinates of the polygon, todo: calculate median
+    # One idea is to classify the shape of the house as another feature?
+    # Can play around with Shapely polygon to get differences from school etc.:
+    # http://toblerity.org/shapely/shapely.geometry.html
     coordinates = line['geometry']['coordinates']
+    centroid = Polygon(coordinates[0]).centroid
+    latitude = centroid.y
+    longitude = centroid.x
     # GID
     gid = line['properties']['gid']
     # Geometry Source Date
@@ -61,7 +68,7 @@ for line in housingData:
     # Begin Date, column to determine the age of the data for a given county
     # begin_date
     # edit_date, Date data was updated in GeoStor
-    csvLine = "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}".format(propertyShape,coordinates,gid,\
+    csvLine = "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}".format(propertyShape,latitude,longitude,gid,\
               srce_date,ow_src_dat,city,state,zip,type,assess_val,imp_val,land_val,total_val,assess_dat,schl_code,\
               acre_area,calc_acre)
     output.write(csvLine)
