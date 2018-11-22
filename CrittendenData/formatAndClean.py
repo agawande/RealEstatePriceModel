@@ -10,6 +10,7 @@ housingData = data['Planning_Cadastre.PARCEL_POLYGON_CAMP']['features']
 
 output = open("crittenden.csv", "w")
 
+# NEED TO ALSO SAVE ADDRESS DATA IF WE WANT TO GET A ZESTIMATE FROM ZILLOW
 head="propertyShape,latitude,longitude,gid,srce_date,ow_src_dat,cty,state,zip,type,assess_val,\
 imp_val,land_val,total_val,assess_dat,schl_code,acre_area,calc_acre"
 
@@ -22,7 +23,6 @@ for line in housingData:
     propertyShape = line['geometry']['type']
     if propertyShape == 'GeometryCollection' or propertyShape == "MultiPolygon":
         continue
-    # Coordinates of the polygon, todo: calculate median
     # One idea is to classify the shape of the house as another feature?
     # Can play around with Shapely polygon to get differences from school etc.:
     # http://toblerity.org/shapely/shapely.geometry.html
